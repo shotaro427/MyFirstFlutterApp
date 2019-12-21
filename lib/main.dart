@@ -70,8 +70,13 @@ class _MyHomePageState extends State<MyHomePage> {
           title: Text(record.name),
           trailing: Text(record.votes.toString()),
           // 投票数を更新
-          onTap: () => record.reference.updateData({"votes": record.votes + 1})
-        ),
+          onTap: () => Firestore.instance.runTransaction((transaction) async {
+            // 非同期処理
+            final freshSnapshot = await transaction.get(record.reference);
+            // トランザクションが取得し終わるまで以下は実行されない
+            final fresh = Record.fromSnapshot(freshSnapshot);
+            await transaction.update(record.reference, {"votes": fresh.votes + 1});
+          }))
       ),
     );
   }
@@ -86,6 +91,7 @@ class Record {
 
   /// それぞれのプロパティーを初期化
   Record.fromMap(Map<String, dynamic> map, {this.reference})
+    // assert: 値がfalseだったらエラーを吐く
     : assert(map['name'] != null),
       assert(map['votes'] != null),
       name = map['name'],
