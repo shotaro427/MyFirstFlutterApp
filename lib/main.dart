@@ -69,7 +69,8 @@ class _MyHomePageState extends State<MyHomePage> {
         child: ListTile(
           title: Text(record.name),
           trailing: Text(record.votes.toString()),
-          onTap: () => print(record),
+          // 投票数を更新
+          onTap: () => record.reference.updateData({"votes": record.votes + 1})
         ),
       ),
     );
@@ -80,14 +81,17 @@ class _MyHomePageState extends State<MyHomePage> {
 class Record {
   final String name;
   final int votes;
+  /// DatabaseのDocumentの参照
   final DocumentReference reference;
 
+  /// それぞれのプロパティーを初期化
   Record.fromMap(Map<String, dynamic> map, {this.reference})
     : assert(map['name'] != null),
       assert(map['votes'] != null),
       name = map['name'],
       votes = map['votes'];
 
+  /// 初期化時にデータとその参照を自身のパラメータに渡す
   Record.fromSnapshot(DocumentSnapshot snapshot)
     : this.fromMap(snapshot.data, reference: snapshot.reference);
 
